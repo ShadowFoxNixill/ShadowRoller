@@ -67,10 +67,12 @@ namespace Nixill.Discord.ShadowRoller.Commands
         return;
       }
 
+      CalcObject obj = null;
+
       try
       {
         // Get the expression and some intermediate objects ready
-        CalcObject obj = CLInterpreter.Interpret(roll_text);
+        obj = CLInterpreter.Interpret(roll_text);
         CalcValue res;
         CalcNumber num;
 
@@ -160,7 +162,8 @@ namespace Nixill.Discord.ShadowRoller.Commands
       }
       catch (Exception ex)
       {
-        await ctx.ReplyAsync($"Exception thrown: {ex}");
+        if (obj != null) await ctx.ReplyAsync($"Input interpretation: `{obj.ToCode()}`\n\nException thrown: {ex}");
+        else await ctx.ReplyAsync($"Exception thrown: {ex}");
       }
     }
   }
