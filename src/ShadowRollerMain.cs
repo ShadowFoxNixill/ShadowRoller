@@ -22,7 +22,11 @@ namespace Nixill.Discord.ShadowRoller
       DiceModule.Load();
 
       // Let's get the bot set up
+#if DEBUG
+      string botToken = File.ReadAllLines("debug_token")[0];
+#else
       string botToken = File.ReadAllLines("token")[0];
+#endif
 
       Discord = new DiscordClient(new DiscordConfiguration()
       {

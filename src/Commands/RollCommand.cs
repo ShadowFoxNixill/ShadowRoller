@@ -57,7 +57,7 @@ namespace Nixill.Discord.ShadowRoller.Commands
     public async Task SeededDetailedRollCommandAsync(InteractionContext ctx,
       [Description("The expression to roll.")] string roll_text,
       [Description("The seed to use.")] int seed)
-      => await RollMethod(ctx, roll_text, seed, false);
+      => await RollMethod(ctx, roll_text, seed, true);
 
     public async Task RollMethod(InteractionContext ctx, string roll_text, int seed, bool detailed)
     {

@@ -64,7 +64,8 @@ Within a single bracket group (`()`, `[]`, `{}`, `,`), multiple operators are pa
 Level|RTL?|Operators
 -:|:-:|:-
 100||`d`, `u` (comparison), `d` (prefix)
-95||`k`, `kh`, `kl`, `dh`, `dl`, `k` (comparison), `d` (comparison)
+95||`r`, `x`, `xr`, `r` (comparison), `x` (comparison)‚ `xr` (comparison)
+90||`k`, `kh`, `kl`, `dh`, `dl`, `k` (comparison), `d` (comparison)
 15|✔|`^`
 10||`*`, `/`, `//`, `%`
 0||`+`, `-`, `-` (prefix)

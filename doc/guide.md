@@ -13,7 +13,16 @@ When the issues are fixed, these will all be turned into a single `/roll` comman
 There is also the `/help` command, which gave you the link to this document, and the `/docs` command, which goes through all the operators more directly.
 
 # Rolling dice
-Description|Roll command|Example output|Notes
-:-|:-|:-|:-
-To roll a d20...|`/roll d20`|**16**|
-To roll three d8s...|`/roll 3d8`|**12** [5, 3, 4]|Numbers are shown in the order originally rolled.
+To roll a specific number of dice, use `/roll [L]d[R]`. Replace `[L]` with the number of dice to roll, and `[R]` with the number of sides each die has. If you're rolling one die, you can skip the `[L]` entirely. Examples:
+
+* `/roll 4d6` - Rolls four six-sided dice, with an output like "**11** [2, 1, 3, 5]".
+* `/roll 2d8` - Rolls two eight-sided dice, with an output like "**11** [7, 4]".
+* `/roll d20` - Rolls one twenty-sided die, with an output like "**12**".
+
+To roll dice until a specific number comes up, use `!r [L]u=[R]` - replace `[L]` with the number of sides each die has, and `[R]` with the number that stops the rolling. (This number won’t be part of the roll itself.) You can also use `>`, `<`, `>=`, `<=`, `!=`, `%`, or `!%` instead of `=` to make it stop on any number that’s - respectively - greater than, less than, at least, at most, not, a multiple of, or not a multiple of, `[R]`. Examples:
+
+* `/roll 2u=1` - Rolls two-sided dice until a 1 is rolled, e.g. "**6** [2, 2, 2]".
+* `/roll 3u!=2` - Rolls three-sided dice until a number that’s not 2 is rolled, e.g. "**2** [2]".
+* `/roll 6u>4` - Rolls six-sided dice until a number that’s greater than 4 is rolled, e.g. "**3** [3]".
+
+> *Note*: If the first roll meets the conditions to stop rolling, the result will be "**0** []".
