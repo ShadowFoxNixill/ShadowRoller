@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands.Attributes;
-using DSharpPlus.SlashCommands.Entities;
+using DSharpPlus.SlashCommands;
 using Nixill.CalcLib.Objects;
 using Nixill.CalcLib.Parsing;
 using Nixill.CalcLib.Varaibles;
@@ -13,61 +11,29 @@ using Nixill.DiceLib;
 
 namespace Nixill.Discord.ShadowRoller.Commands
 {
-  public class RollCommand : BaseSlashCommandModule
+  public class RollCommand : SlashCommandModule
   {
-    public RollCommand(IServiceProvider p) : base(p) { }
-
-#if DEBUG
-    [SlashCommand("roll", 608847976554692611)]
-#else
-    [SlashCommand("roll")]
-#endif
-    [Description("Rolls dice with a random seed!")]
-    public async Task RollCommandAsync(InteractionContext ctx,
-      [Description("The expression to roll.")] string roll_text)
-      => await RollMethod(ctx, roll_text, (int)ctx.Interaction.Id, false);
-
-#if DEBUG
-    [SlashCommand("roll_seeded", 608847976554692611)]
-#else
-    [SlashCommand("roll_seeded")]
-#endif
-    [Description("Rolls dice with a specific seed!")]
-    public async Task SeededRollCommandAsync(InteractionContext ctx,
-      [Description("The expression to roll.")] string roll_text,
-      [Description("The seed to use.")] int seed)
-      => await RollMethod(ctx, roll_text, seed, false);
-
-#if DEBUG
-    [SlashCommand("roll_detailed", 608847976554692611)]
-#else
-    [SlashCommand("roll_detailed")]
-#endif
-    [Description("Rolls dice with a random seed, and provides detailed output.")]
-    public async Task DetailedRollCommandAsync(InteractionContext ctx,
-      [Description("The expression to roll.")] string roll_text)
-      => await RollMethod(ctx, roll_text, (int)ctx.Interaction.Id, true);
-
-#if DEBUG
-    [SlashCommand("roll_seeded_detailed", 608847976554692611)]
-#else
-    [SlashCommand("roll_seeded_detailed")]
-#endif
-    [Description("Rolls dice with a specific seed, and provides detailed output.")]
-    public async Task SeededDetailedRollCommandAsync(InteractionContext ctx,
-      [Description("The expression to roll.")] string roll_text,
-      [Description("The seed to use.")] int seed)
-      => await RollMethod(ctx, roll_text, seed, true);
-
-    public async Task RollMethod(InteractionContext ctx, string roll_text, int seed, bool detailed)
+    [SlashCommand("roll", "Rolls dice.")]
+    public async Task RollMethod(InteractionContext ctx,
+      [Option("roll_text", "The text of the command to roll")] string roll_text,
+      [Option("seed", "The seed to use.")] string seedText = null,
+      [Option("detailed", "Whether or not to use detailed output.")] bool detailed = false)
     {
       if (roll_text.Contains('"'))
       {
-        await ctx.ReplyAsync("Shadow Roller doesn't support strings.");
+        await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
+          new DiscordInteractionResponseBuilder().WithContent("Shadow Roller doesn't support strings."));
         return;
       }
 
+      await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredChannelMessageWithSource);
+
       CalcObject obj = null;
+
+      int seed = 0;
+
+      if (seedText == null) seed = (int)ctx.InteractionId;
+      else if (!int.TryParse(seedText, out seed)) seed = seedText.GetHashCode();
 
       try
       {
@@ -85,7 +51,7 @@ namespace Nixill.Discord.ShadowRoller.Commands
           PerRollLimit = 25
         });
 
-        context.Add(new Random(seed));
+        context.Add(new Random((int)seed));
 
         List<(string, CalcList)> history = new List<(string, CalcList)>();
         context.Add(history);
@@ -138,7 +104,7 @@ namespace Nixill.Discord.ShadowRoller.Commands
             ret.Append($" *(Seed: {seed})*");
           }
 
-          await ctx.ReplyAsync(ret.ToString());
+          await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(ret.ToString()));
         }
         else
         {
@@ -157,13 +123,22 @@ namespace Nixill.Discord.ShadowRoller.Commands
 
           builder.AddField("Rolls", historyOutput.ToString(), false);
 
-          await ctx.ReplyAsync("", new DiscordEmbed[] { builder.Build() });
+          await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(builder.Build()));
         }
       }
       catch (Exception ex)
       {
-        if (obj != null) await ctx.ReplyAsync($"Input interpretation: `{obj.ToCode()}`\n\nException thrown: {ex}");
-        else await ctx.ReplyAsync($"Exception thrown: {ex}");
+        StringBuilder builder = new StringBuilder();
+        if (obj != null) builder.Append($"Input interpretation: `{obj}`\n\n");
+        builder.Append("An error occurred");
+#if DEBUG
+        builder.Append(".\n\nThe stack trace is as follows:\n");
+        builder.Append($"{ex}");
+#else
+        builder.AppendLine($": {ex.GetType().Name}: {ex.Message}");
+#endif
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(builder.ToString()));
       }
     }
   }
