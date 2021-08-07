@@ -19,6 +19,7 @@ namespace Nixill.Discord.ShadowRoller.Commands
       [Option("seed", "The seed to use.")] string seedText = null,
       [Option("detailed", "Whether or not to use detailed output.")] bool detailed = false)
     {
+      Console.WriteLine("Test.");
       if (roll_text.Contains('"'))
       {
         await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
