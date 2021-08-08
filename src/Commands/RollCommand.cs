@@ -9,12 +9,13 @@ using Nixill.CalcLib.Objects;
 using Nixill.CalcLib.Parsing;
 using Nixill.CalcLib.Varaibles;
 using Nixill.DiceLib;
+using Nixill.Discord.Extensions;
 
 namespace Nixill.Discord.ShadowRoller.Commands
 {
   public class RollCommand : SlashCommandModule
   {
-    private static Regex owo = new Regex(@"");
+    private static Regex rgxName = new Regex(@"^\$?[a-z][a-z-_0-9]*[a-z0-9]$");
 
     [SlashCommand("roll", "Rolls dice.")]
     public async Task RollMethod(InteractionContext ctx,
@@ -25,12 +26,28 @@ namespace Nixill.Discord.ShadowRoller.Commands
     {
       if (roll_text.Contains('"'))
       {
-        await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
-          new DiscordInteractionResponseBuilder().WithContent("Shadow Roller doesn't support strings."));
+        await ctx.ReplyAsync("Shadow Roller doesn't support strings.");
         return;
       }
 
-      await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredChannelMessageWithSource);
+      if (saveTo != null)
+      {
+        saveTo = saveTo.ToLower();
+
+        if (!rgxName.IsMatch(saveTo))
+        {
+          await ctx.ReplyAsync("Invalid variable name.");
+          return;
+        }
+
+        if (saveTo.StartsWith('$') && ctx.User.Id != ShadowRollerMain.Owner)
+        {
+          await ctx.ReplyAsync("Only the bot's owner may save global variables.");
+          return;
+        }
+      }
+
+      await ctx.DeferAsync();
 
       CalcObject obj = null;
 
@@ -92,6 +109,8 @@ namespace Nixill.Discord.ShadowRoller.Commands
         // Save the output to a variable, if necessary.
         if (saveTo != null)
         {
+          // we've done the necessary checks above
+          CLVariables.Save(saveTo, res, context);
         }
 
         // Now build the output.

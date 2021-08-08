@@ -14,6 +14,8 @@ namespace Nixill.Discord.ShadowRoller
     internal static DiscordClient Discord;
     internal static SlashCommandsExtension Commands;
 
+    internal static ulong Owner;
+
     static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
 
     public static async Task MainAsync()
@@ -28,6 +30,8 @@ namespace Nixill.Discord.ShadowRoller
 #else
       string botToken = File.ReadAllLines("cfg/token.cfg")[0];
 #endif
+
+      Owner = ulong.Parse(File.ReadAllLines("cfg/owner.txt")[0]);
 
       Discord = new DiscordClient(new DiscordConfiguration()
       {
