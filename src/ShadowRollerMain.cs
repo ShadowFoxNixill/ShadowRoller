@@ -5,6 +5,7 @@ using DSharpPlus.SlashCommands;
 using Nixill.CalcLib.Modules;
 using Nixill.DiceLib;
 using Nixill.Discord.ShadowRoller.Commands;
+using Nixill.Discord.ShadowRoller.Variables;
 
 namespace Nixill.Discord.ShadowRoller
 {
@@ -43,6 +44,9 @@ namespace Nixill.Discord.ShadowRoller
 #else
       Commands.RegisterCommands<RollCommand>();
 #endif
+
+      await using var io = new VarIO();
+      await io.CreateHandlers();
 
       await Task.Delay(-1);
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
@@ -13,13 +14,15 @@ namespace Nixill.Discord.ShadowRoller.Commands
 {
   public class RollCommand : SlashCommandModule
   {
+    private static Regex owo = new Regex(@"");
+
     [SlashCommand("roll", "Rolls dice.")]
     public async Task RollMethod(InteractionContext ctx,
       [Option("roll_text", "The text of the command to roll")] string roll_text,
-      [Option("seed", "The seed to use.")] string seedText = null,
-      [Option("detailed", "Whether or not to use detailed output.")] bool detailed = false)
+      [Option("seed", "The seed to use.")] long? seedLong = null,
+      [Option("detailed", "Whether or not to use detailed output.")] bool detailed = false,
+      [Option("save_to", "Variable to save the result to.")] string saveTo = null)
     {
-      Console.WriteLine("Test.");
       if (roll_text.Contains('"'))
       {
         await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
@@ -33,8 +36,8 @@ namespace Nixill.Discord.ShadowRoller.Commands
 
       int seed = 0;
 
-      if (seedText == null) seed = (int)ctx.InteractionId;
-      else if (!int.TryParse(seedText, out seed)) seed = seedText.GetHashCode();
+      if (seedLong == null) seed = (int)ctx.InteractionId;
+      else seed = (int)seedLong;
 
       try
       {
@@ -53,6 +56,9 @@ namespace Nixill.Discord.ShadowRoller.Commands
         });
 
         context.Add(new Random((int)seed));
+
+        context.Add(ctx.Guild);
+        context.Add(ctx.User);
 
         List<(string, CalcList)> history = new List<(string, CalcList)>();
         context.Add(history);
@@ -82,6 +88,11 @@ namespace Nixill.Discord.ShadowRoller.Commands
         }
 
         result = num.ToString();
+
+        // Save the output to a variable, if necessary.
+        if (saveTo != null)
+        {
+        }
 
         // Now build the output.
         if (!detailed)
