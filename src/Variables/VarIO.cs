@@ -40,10 +40,13 @@ namespace Nixill.Discord.ShadowRoller.Variables
         {
           DiscordGuild guild = (DiscordGuild)context.Get(derType);
 
+          ulong guildId = 0;
+          if (!loadData.Name.StartsWith('$')) guildId = guild.Id;
+
           var cmd = conn.CreateCommand();
           cmd.CommandText = LoadCmd;
           cmd.Parameters.AddWithValue("$name", loadData.Name);
-          cmd.Parameters.AddWithValue("$guild", guild.Id);
+          cmd.Parameters.AddWithValue("$guild", guildId);
 
           using (var reader = cmd.ExecuteReader())
           {
@@ -67,10 +70,13 @@ namespace Nixill.Discord.ShadowRoller.Variables
 
           DiscordGuild guild = (DiscordGuild)context.Get(guildType);
 
+          ulong guildId = 0;
+          if (!saveData.Name.StartsWith('$')) guildId = guild.Id;
+
           var cmd = conn.CreateCommand();
           cmd.CommandText = SaveCmd;
           cmd.Parameters.AddWithValue("$name", saveData.Name);
-          cmd.Parameters.AddWithValue("$guild", guild.Id);
+          cmd.Parameters.AddWithValue("$guild", guildId);
           cmd.Parameters.AddWithValue("$object", saveData.Value.ToCode());
 
           int rows = cmd.ExecuteNonQuery();
