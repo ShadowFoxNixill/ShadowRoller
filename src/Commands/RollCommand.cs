@@ -135,6 +135,11 @@ namespace Nixill.Discord.ShadowRoller.Commands
             ret.Append($" *(Seed: {seed})*");
           }
 
+          if (saveTo != null)
+          {
+            ret.Append($" // Saved to `{{{saveTo}}}`");
+          }
+
           await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(ret.ToString()));
         }
         else
@@ -144,15 +149,19 @@ namespace Nixill.Discord.ShadowRoller.Commands
           if (input != null) builder.AddField("Input interpretation", $"`{input}`", true);
           builder.AddField("Output value", $"**{result}**", true);
           if (list != null) builder.AddField("Output list", list, true);
-          builder.AddField("Random seed", seed.ToString(), true);
+          if (history.Count > 0) builder.AddField("Random seed", seed.ToString(), true);
+          if (saveTo != null) builder.AddField("Saved to", $"{{{saveTo}}}", true);
 
-          StringBuilder historyOutput = new StringBuilder();
-          foreach (var item in history)
+          if (history.Count > 0)
           {
-            historyOutput.AppendLine($"`{item.Item1}`: {item.Item2.ToString(1)}");
-          }
+            StringBuilder historyOutput = new StringBuilder();
+            foreach (var item in history)
+            {
+              historyOutput.AppendLine($"`{item.Item1}`: {item.Item2.ToString(1)}");
+            }
 
-          builder.AddField("Rolls", historyOutput.ToString(), false);
+            builder.AddField("Rolls", historyOutput.ToString(), false);
+          }
 
           await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(builder.Build()));
         }

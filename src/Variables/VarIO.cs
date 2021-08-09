@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using Microsoft.Data.Sqlite;
@@ -23,6 +25,18 @@ namespace Nixill.Discord.ShadowRoller.Variables
       (varName, varGuild, varObject)
       VALUES ($name, $guild, $object);";
 
+    private const string DelCmd =
+    @"DELETE FROM variables
+      WHERE varName = $name
+        AND varGuild = $guild;";
+
+    private const string ListCmd =
+    @"SELECT varName, varObject
+      FROM variables
+      WHERE varGuild = $guild;";
+
+    internal static VarIO Handler;
+
     public async Task CreateHandlers()
     {
       conn = new SqliteConnection("Data Source=cfg/variables.db");
@@ -30,6 +44,9 @@ namespace Nixill.Discord.ShadowRoller.Variables
 
       CLVariables.VariableLoaded += LoadHandler;
       CLVariables.VariableSaved += SaveHandler;
+      CLVariables.VariableDeleted += DelHandler;
+
+      Handler = this;
     }
 
     public void LoadHandler(object sender, CLVariableLoad loadData)
@@ -79,9 +96,50 @@ namespace Nixill.Discord.ShadowRoller.Variables
           cmd.Parameters.AddWithValue("$guild", guildId);
           cmd.Parameters.AddWithValue("$object", saveData.Value.ToCode());
 
-          int rows = cmd.ExecuteNonQuery();
+          cmd.ExecuteNonQuery();
         }
       }
+    }
+
+    public void DelHandler(object sender, CLVariableDelete delData)
+    {
+      if (sender is CLContextProvider context)
+      {
+        if (context.ContainsDerived(typeof(DiscordGuild), out Type guildType))
+        {
+          delData.Deleted = true;
+
+          DiscordGuild guild = (DiscordGuild)context.Get(guildType);
+
+          ulong guildId = 0;
+          if (!delData.Name.StartsWith('$')) guildId = guild.Id;
+
+          var cmd = conn.CreateCommand();
+          cmd.CommandText = DelCmd;
+          cmd.Parameters.AddWithValue("$name", delData.Name);
+          cmd.Parameters.AddWithValue("$guild", guildId);
+
+          cmd.ExecuteNonQuery();
+        }
+      }
+    }
+
+    public IDictionary<string, string> ListVariables(ulong guildId)
+    {
+      Dictionary<string, string> ret = new();
+
+      var cmd = conn.CreateCommand();
+      cmd.CommandText = ListCmd;
+      cmd.Parameters.AddWithValue("$guild", guildId);
+
+      var reader = cmd.ExecuteReader();
+
+      while (reader.Read())
+      {
+        ret.Add(reader.GetString(0), reader.GetString(1));
+      }
+
+      return ret;
     }
 
     public async ValueTask DisposeAsync()

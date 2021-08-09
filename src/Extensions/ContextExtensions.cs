@@ -12,5 +12,8 @@ namespace Nixill.Discord.Extensions
 
     public static async Task DeferAsync(this InteractionContext ctx) =>
       await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredChannelMessageWithSource);
+
+    public static async Task EditAsync(this InteractionContext ctx, string message) =>
+      await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(message));
   }
 }

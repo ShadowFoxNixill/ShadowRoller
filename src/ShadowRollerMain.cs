@@ -45,8 +45,10 @@ namespace Nixill.Discord.ShadowRoller
 
 #if DEBUG
       Commands.RegisterCommands<RollCommand>(608847976554692611L);
+      Commands.RegisterCommands<VarCommands>(608847976554692611L);
 #else
       Commands.RegisterCommands<RollCommand>();
+      Commands.RegisterCommands<VarCommands>();
 #endif
 
       await using var io = new VarIO();
