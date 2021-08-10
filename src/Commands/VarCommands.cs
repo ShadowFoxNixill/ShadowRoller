@@ -66,7 +66,7 @@ namespace Nixill.Discord.ShadowRoller.Commands
       catch (Exception ex)
       {
         StringBuilder builder = new StringBuilder();
-        if (obj != null) builder.Append($"Input interpretation: `{obj}`\n\n");
+        if (obj != null) builder.Append($"Input interpretation: `{obj.ToCode()}`\n\n");
         builder.Append("An error occurred");
 #if DEBUG
         builder.Append(".\n\nThe stack trace is as follows:\n");
