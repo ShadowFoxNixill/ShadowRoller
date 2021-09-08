@@ -5,6 +5,7 @@ using DSharpPlus.SlashCommands;
 using Nixill.CalcLib.Modules;
 using Nixill.DiceLib;
 using Nixill.Discord.ShadowRoller.Commands;
+using Nixill.Discord.ShadowRoller.Variables;
 
 namespace Nixill.Discord.ShadowRoller
 {
@@ -12,6 +13,8 @@ namespace Nixill.Discord.ShadowRoller
   {
     internal static DiscordClient Discord;
     internal static SlashCommandsExtension Commands;
+
+    internal static ulong Owner;
 
     static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
 
@@ -28,6 +31,8 @@ namespace Nixill.Discord.ShadowRoller
       string botToken = File.ReadAllLines("cfg/token.cfg")[0];
 #endif
 
+      Owner = ulong.Parse(File.ReadAllLines("cfg/owner.txt")[0]);
+
       Discord = new DiscordClient(new DiscordConfiguration()
       {
         Token = botToken,
@@ -40,9 +45,14 @@ namespace Nixill.Discord.ShadowRoller
 
 #if DEBUG
       Commands.RegisterCommands<RollCommand>(608847976554692611L);
+      Commands.RegisterCommands<VarCommands>(608847976554692611L);
 #else
       Commands.RegisterCommands<RollCommand>();
+      Commands.RegisterCommands<VarCommands>();
 #endif
+
+      await using var io = new VarIO();
+      await io.CreateHandlers();
 
       await Task.Delay(-1);
     }
